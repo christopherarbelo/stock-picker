@@ -1,38 +1,41 @@
 def stock_picker prices
-  possible_values = get_possible_values prices
-  highest_profit = 0
-  pair_index = nil
+  min_index = nil
+  max_index = nil
+  max_profit = nil
 
-  possible_values.each_with_index do |set, index|
-    profit = prices[set.last] - prices[set.first]
-    if highest_profit < profit
-      highest_profit = profit
-      pair_index = index
-    end
-  end
-
-  pair_index ? possible_values[pair_index] : "There wasn't a profit opportunity!"
-end
-
-def get_possible_values prices
-  possible_values = []
   prices.each_with_index do |possible_min_price, possible_min_index|
-    max_index = nil
     prices.each_with_index do |possible_max_price, possible_max_index|
-      next if possible_min_index >= possible_max_index
-      
-      if max_index and possible_max_price > prices[max_index]
-        max_index = possible_max_index
-      elsif !max_index and possible_max_price > possible_min_price
-        max_index = possible_max_index
+      next if possible_max_index <= possible_min_index
+
+      if possible_max_price > possible_min_price
+        profit = possible_max_price - possible_min_price
+        
+        if !max_profit or profit > max_profit
+          max_profit = profit
+          min_index = possible_min_index
+          max_index = possible_max_index
+        end
       end
     end
-
-    if max_index
-      possible_values << [possible_min_index, max_index]
-    end
   end
-  possible_values
+
+  if max_profit
+    "Your best opportunity to buy is on day: #{min_index}"\
+    " and sell on day: #{max_index} for a profit of $#{max_profit}!"
+  else
+    "No opportunity to capitalize :("
+  end
 end
 
-pp stock_picker [17,3,6,9,15,8,6,1,10]
+puts "Enter stock prices by day, press ENTER to stop: "
+prices = []
+day = 0
+loop do
+  print "Day #{day}: "
+  input = gets.chomp
+  break if input == ""
+  prices << input.to_i
+  day += 1
+end
+
+puts stock_picker prices
